@@ -5,12 +5,14 @@ const { initializeConnections } = require('../config/connection');
 const { logger, loggerMiddleware } = require('../middleware/logger');
 const errorHandler = require('./middleware/errorHandler');
 const routes = require('./routes');
+const { authenticateJWT } = require('../middleware/auth');
 const PORT = process.env.API_GATEWAY_PORT;
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(loggerMiddleware);
+app.use(authenticateJWT);
 app.use(routes);
 
 // Health check route
