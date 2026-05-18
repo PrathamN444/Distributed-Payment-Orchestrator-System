@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 require('dotenv').config();
-const { initializeConnections } = require('../config/connection');
+const { initializeConnections } = require('./config/connection');
 const { logger, loggerMiddleware } = require('../middleware/logger');
 const errorHandler = require('./middleware/errorHandler');
 const routes = require('./routes');
@@ -12,14 +12,15 @@ const PORT = process.env.API_GATEWAY_PORT;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(loggerMiddleware);
-app.use(authenticateJWT);
-app.use(routes);
 
 // Health check route
 app.get('/health', (req, res) => {
     logger.info('Health check endpoint called');
     res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
 });
+
+app.use(authenticateJWT);
+app.use(routes);
 
 // Global error handler
 app.use(errorHandler);
