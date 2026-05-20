@@ -1,15 +1,15 @@
 const { logger } = require('../../shared/middleware/logger');
-const { callPaymentService } = require('../src/services/paymentServiceClient');
+const { callPaymentService } = require('../services/paymentServiceClient');
 
 const paymentController = {
   async createPaymentController(req, res, next) {
     try {
-      const response = await callPaymentService({
-        method: 'post',
-        path: '/api/v1/payments',
-        data: req.body,
-        jwtToken: req.headers['jwt-token'],
-      });
+      const response = await callPaymentService(
+        'post',
+        '/api/v1/payments',
+        req.body,
+        req.headers['jwt-token'],
+      );
 
       return res.status(response.status).json(response.data);
     } catch (error) {
@@ -23,11 +23,12 @@ const paymentController = {
 
   async getPaymentStatusController(req, res, next) {
     try {
-      const response = await callPaymentService({
-        method: 'get',
-        path: `/api/v1/payments/${req.params.id}`,
-        jwtToken: req.headers['jwt-token'],
-      });
+      const response = await callPaymentService(
+        'get',
+        `/api/v1/payments`,
+        req.query,
+        req.headers['jwt-token'],
+      );
 
       return res.status(response.status).json(response.data);
     } catch (error) {

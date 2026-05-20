@@ -24,9 +24,8 @@ paymentServiceBreaker.on('timeout', () => logger.warn('PaymentService request ti
 paymentServiceBreaker.on('reject', () => logger.warn('PaymentService request rejected (circuit open)'));
 paymentServiceBreaker.on('failure', (error) => logger.error('PaymentService request failed', { error: error.message }));
 
-paymentServiceBreaker.fallback(() => ({
-  status: 503,
-  data: { message: 'Payment service temporarily unavailable. Please try again later.' },
-}));
+paymentServiceBreaker.fallback(() => {
+  throw new Error('Payment service temporarily unavailable');
+});
 
 module.exports = { paymentServiceBreaker };

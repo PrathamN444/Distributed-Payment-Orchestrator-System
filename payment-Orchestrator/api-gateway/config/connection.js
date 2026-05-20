@@ -1,6 +1,6 @@
 const { logger } = require('../../shared/middleware/logger');
-const { connectPostgres } = require('../../config/db/postgres');
-const { connectRedis } = require('../../config/redis/redis');
+const { connectPostgres } = require('../../shared/config/db/postgres');
+const { connectRedis } = require('../../shared/config/redis/redis');
 
 const initializeConnections = async () => {
     try {

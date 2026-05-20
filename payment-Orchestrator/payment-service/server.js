@@ -2,8 +2,10 @@ require('dotenv').config();
 const express = require('express');
 const { initializeConnections } = require('./config/connection');
 const { logger, loggerMiddleware } = require('../shared/middleware/logger');
+const { authenticateJWT } = require('../shared/middleware/auth');
 const app = express();
 const PORT = process.env.PAYMENT_SERVICE_PORT;
+const routes = require('./routes');
 
 // Middleware
 app.use(express.json());
@@ -26,6 +28,9 @@ app.get('/health', (req, res) => {
     logger.info('Health check endpoint called');
     res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
 });
+
+app.use(authenticateJWT);
+app.use(routes);
 
 // Start server with database connections
 const startServer = async () => {

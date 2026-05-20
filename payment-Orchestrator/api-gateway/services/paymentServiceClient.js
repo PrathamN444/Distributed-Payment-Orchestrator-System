@@ -1,6 +1,6 @@
 const { paymentServiceBreaker } = require('../utils/gatewayCircuitBreaker');
 
-function buildPaymentServiceRequest({ method, path, data, jwtToken, params }) {
+function buildPaymentServiceRequest(method, path, data, jwtToken) {
   const requestOptions = {
     method,
     url: `${process.env.PAYMENT_SERVICE_URL}${path}`,
@@ -11,19 +11,18 @@ function buildPaymentServiceRequest({ method, path, data, jwtToken, params }) {
     },
   };
 
-  if (data !== undefined) {
-    requestOptions.data = data;
+  if(method === 'get'){
+    requestOptions.params = data;
   }
-
-  if (params !== undefined) {
-    requestOptions.params = params;
+  else{
+    requestOptions.data = data;
   }
 
   return requestOptions;
 }
 
-async function callPaymentService({ method, path, data, jwtToken, params }) {
-  const requestOptions = buildPaymentServiceRequest({ method, path, data, jwtToken, params });
+async function callPaymentService(method, path, data, jwtToken) {
+  const requestOptions = buildPaymentServiceRequest(method, path, data, jwtToken);
   return paymentServiceBreaker.fire(requestOptions);
 }
 

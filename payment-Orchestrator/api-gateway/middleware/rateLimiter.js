@@ -1,7 +1,7 @@
 const { RateLimiterRedis } = require('rate-limiter-flexible');
 const Redis = require('ioredis');
-const { API_METHODS, RATE_LIMITER_CONFIG } = require('../../constants/rateLimitingConstants');
-const { logger } = require('../../../shared/middleware/logger');
+const { API_METHODS, RATE_LIMITER_CONFIG } = require('../constants/rateLimitingConstants');
+const { logger } = require('../../shared/middleware/logger');
 
 const redisClient = new Redis(process.env.REDIS_URL || 'redis://127.0.0.1:6379');
 // redis connection events 
