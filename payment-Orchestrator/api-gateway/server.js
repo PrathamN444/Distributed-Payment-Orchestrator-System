@@ -2,10 +2,10 @@ const express = require('express');
 const app = express();
 require('dotenv').config();
 const { initializeConnections } = require('./config/connection');
-const { logger, loggerMiddleware } = require('../middleware/logger');
+const { logger, loggerMiddleware } = require('../shared/middleware/logger');
 const errorHandler = require('./middleware/errorHandler');
 const routes = require('./routes');
-const { authenticateJWT } = require('../middleware/auth');
+const { authenticateJWT } = require('../shared/middleware/auth');
 const PORT = process.env.API_GATEWAY_PORT;
 
 // Middleware

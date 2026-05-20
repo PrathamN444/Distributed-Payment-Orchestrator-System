@@ -1,7 +1,7 @@
 const { RateLimiterRedis } = require('rate-limiter-flexible');
 const Redis = require('ioredis');
-const { API_METHODS, RATE_LIMITER_CONFIG } = require('../constants/rateLimitingConstants');
-const { logger } = require('../../middleware/logger');
+const { API_METHODS, RATE_LIMITER_CONFIG } = require('../../constants/rateLimitingConstants');
+const { logger } = require('../../../shared/middleware/logger');
 
 const redisClient = new Redis(process.env.REDIS_URL || 'redis://127.0.0.1:6379');
 // redis connection events 
@@ -21,7 +21,7 @@ redisClient.on('reconnecting', () => {
 
 const limiterCache = new Map();
 
-function getLimiter(cfg){
+function getLimiter(cfg) {
   const cacheKey = cfg.keyPrefix || `${cfg.points}:${cfg.duration}`;
   if (limiterCache.has(cacheKey)) return limiterCache.get(cacheKey);
 
@@ -45,37 +45,37 @@ function getUserKey(req) {
   return `ip:${req.ip}`;
 }
 
-function rateLimitMiddleware(apiName){
+function rateLimitMiddleware(apiName) {
   const cfg = RATE_LIMITER_CONFIG[apiName];
-  if(!cfg){
+  if (!cfg) {
     // return noop middleware if not configured
     return (req, res, next) => next();
   }
   const limiter = getLimiter(cfg);
 
-  return async function (req, res, next){
+  return async function (req, res, next) {
     const key = getUserKey(req);
-    try{
-        const rateLimitingRes = await limiter.consume(key, 1);
-        res.set('X-RateLimit-Limit', cfg.points);
-        res.set('X-RateLimit-Remaining', rateLimitingRes.remainingPoints);
-        res.set('X-RateLimit-Reset', Math.floor(Date.now() / 1000) + Math.ceil(rateLimitingRes.msBeforeNext / 1000));
+    try {
+      const rateLimitingRes = await limiter.consume(key, 1);
+      res.set('X-RateLimit-Limit', cfg.points);
+      res.set('X-RateLimit-Remaining', rateLimitingRes.remainingPoints);
+      res.set('X-RateLimit-Reset', Math.floor(Date.now() / 1000) + Math.ceil(rateLimitingRes.msBeforeNext / 1000));
+      return next();
+    }
+    catch (err) {
+      const isRateLimitRejection = err && typeof err.msBeforeNext === 'number';
+      // Redis or host failure
+      if (!isRateLimitRejection) {
+        logger.error('Redis unavailable - Rate limiter Redis failure', { error: err.message, stack: err.stack });
         return next();
-    } 
-    catch(err){
-        const isRateLimitRejection = err && typeof err.msBeforeNext === 'number';
-        // Redis or host failure
-        if(!isRateLimitRejection){
-            logger.error('Redis unavailable - Rate limiter Redis failure', { error: err.message, stack: err.stack });
-            return next();
-        }
-        // Rate limit exceeded
-        const retrySecs = Math.ceil(err.msBeforeNext / 1000) || 1;
-        res.set('Retry-After', String(retrySecs));
-        res.set('X-RateLimit-Limit', cfg.points);
-        res.set('X-RateLimit-Remaining', 0);
-        res.set('X-RateLimit-Reset', Math.floor(Date.now() / 1000) + retrySecs);
-        return res.status(429).json({ message: 'Too Many Requests', retryAfter: retrySecs });
+      }
+      // Rate limit exceeded
+      const retrySecs = Math.ceil(err.msBeforeNext / 1000) || 1;
+      res.set('Retry-After', String(retrySecs));
+      res.set('X-RateLimit-Limit', cfg.points);
+      res.set('X-RateLimit-Remaining', 0);
+      res.set('X-RateLimit-Reset', Math.floor(Date.now() / 1000) + retrySecs);
+      return res.status(429).json({ message: 'Too Many Requests', retryAfter: retrySecs });
     }
   };
 }

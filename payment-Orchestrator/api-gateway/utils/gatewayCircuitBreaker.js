@@ -1,6 +1,6 @@
 const axios = require('axios');
 const CircuitBreaker = require('opossum');
-const { logger } = require('../../middleware/logger');
+const { logger } = require('../../shared/middleware/logger');
 
 const breakerOptions = {
   timeout: 5000,

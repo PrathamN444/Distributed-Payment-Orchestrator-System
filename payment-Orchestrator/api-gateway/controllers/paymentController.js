@@ -1,5 +1,5 @@
-const { logger } = require('../../middleware/logger');
-const { callPaymentService } = require('../services/paymentServiceClient');
+const { logger } = require('../../shared/middleware/logger');
+const { callPaymentService } = require('../src/services/paymentServiceClient');
 
 const paymentController = {
   async createPaymentController(req, res, next) {

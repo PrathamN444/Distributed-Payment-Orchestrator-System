@@ -1,4 +1,4 @@
-const { logger } = require('../../middleware/logger');
+const { logger } = require('../../shared/middleware/logger');
 const { connectPostgres } = require('../../config/db/postgres');
 const { connectRedis } = require('../../config/redis/redis');
 

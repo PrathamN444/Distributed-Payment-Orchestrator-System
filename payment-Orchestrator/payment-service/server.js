@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const { initializeConnections } = require('./config/connection');
-const { logger, loggerMiddleware } = require('../middleware/logger');
+const { logger, loggerMiddleware } = require('../shared/middleware/logger');
 const app = express();
 const PORT = process.env.PAYMENT_SERVICE_PORT;
 
@@ -38,7 +38,7 @@ const startServer = async () => {
         app.locals.redisClient = redisClient;
 
         server = app.listen(PORT, () => {
-            logger.info(`🚀 Server started on port ${PORT}`);
+            logger.info(`🚀 Payment service server started on port ${PORT}`);
             logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
         });
 
@@ -61,7 +61,7 @@ const startServer = async () => {
         process.on('SIGTERM', () => shutdown('SIGTERM'));
         process.on('SIGINT', () => shutdown('SIGINT'));
     } catch (error) {
-        logger.fatal('Failed to start server', {
+        logger.fatal('Failed to start payment service server', {
             error: error.message,
             stack: error.stack
         });
