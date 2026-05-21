@@ -4,16 +4,17 @@ const { logger } = require('../../middleware/logger');
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 2000; // 2 seconds
 
+const redis = new Redis({
+  host: process.env.REDIS_HOST || 'localhost',
+  port: process.env.REDIS_PORT || 6379,
+  // password: process.env.REDIS_PASSWORD || undefined,
+  // db: process.env.REDIS_DB || 0,
+  enableReadyCheck: true,
+  enableOfflineQueue: true,
+  retryStrategy: (times) => Math.min(times * 50, 2000),
+});
+
 const connectRedis = async (retries = 0) => {
-  const redis = new Redis({
-    host: process.env.REDIS_HOST || 'localhost',
-    port: process.env.REDIS_PORT || 6379,
-    // password: process.env.REDIS_PASSWORD || undefined,
-    // db: process.env.REDIS_DB || 0,
-    enableReadyCheck: true,
-    enableOfflineQueue: true,
-    retryStrategy: (times) => Math.min(times * 50, 2000),
-  });
 
   return new Promise((resolve, reject) => {
     const handleConnect = () => {
@@ -55,4 +56,4 @@ const connectRedis = async (retries = 0) => {
   });
 };
 
-module.exports = { connectRedis };
+module.exports = { connectRedis, redis };

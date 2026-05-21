@@ -3,6 +3,7 @@ const responseHandler = require("../../shared/utils/responseHandler");
 const { StatusCodes } = require('http-status-codes');
 const paymentRepository = require("../repositories/paymentRepository");
 const { generatePaymentId } = require("../utils/commonMethods");
+const { paymentQueue } = require("../utils/paymentQueue");
 
 const createPayment = async (requestModel) => {
     const { TransactionId, Amount, UserId } = requestModel;
@@ -18,11 +19,25 @@ const createPayment = async (requestModel) => {
             payment_id: generatePaymentId(),
         };
         const createdPayment = await paymentRepository.createPayment(payment); 
+
+        // add payment processing job to queue
+        await paymentQueue.add('process-payment', {
+            provider_transaction_id: TransactionId,
+            user_id: UserId,
+            amount: Amount,
+            payment_id: createdPayment.payment_id,
+        },
+        {
+            jobId: createdPayment.payment_id    // unique uuid for the job to prevent duplicates
+        });
+
+        logger.info('Payment created successfully');
         return responseHandler.successResponse({ Payment: createdPayment, DuplicatePayment: false }, 'Payment created successfully', StatusCodes.ACCEPTED);
     }
     catch(error){
         if(error.code === '23505'){
             const existingPayment = await paymentRepository.getPaymentById(TransactionId);
+            logger.warn(`Duplicate payment attempt detected. Fetched payment details: ${JSON.stringify(existingPayment)}`);
             return responseHandler.successResponse({ Payment: existingPayment, DuplicatePayment: true }, 'Payment with this TransactionId already exists', StatusCodes.ACCEPTED);
         }
 

@@ -1,0 +1,11 @@
+const PAYMENT_STATUS = {
+    PENDING: 'PENDING',
+    PROCESSING: 'PROCESSING',
+    SUCCESS: 'SUCCESS',
+    FAILED: 'FAILED',
+    RETRYING: 'RETRYING'
+};
+
+module.exports = {
+    PAYMENT_STATUS,
+}
