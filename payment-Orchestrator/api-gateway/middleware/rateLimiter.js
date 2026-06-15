@@ -39,8 +39,8 @@ function getLimiter(cfg) {
 
 
 function getUserKey(req) {
-  if (req.user && req.user.id) {
-    return `user:${req.user.id}`;
+  if (req.headers && req.headers.userid) {
+    return `user:${req.headers.userid}`;
   }
   return `ip:${req.ip}`;
 }
@@ -48,7 +48,7 @@ function getUserKey(req) {
 function rateLimitMiddleware(apiName) {
   const cfg = RATE_LIMITER_CONFIG[apiName];
   if (!cfg) {
-    // return noop middleware if not configured
+    // return middleware if not configured
     return (req, res, next) => next();
   }
   const limiter = getLimiter(cfg);

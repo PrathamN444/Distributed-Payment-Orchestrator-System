@@ -6,6 +6,7 @@ const { authenticateJWT } = require('../shared/middleware/auth');
 const app = express();
 const PORT = process.env.PAYMENT_SERVICE_PORT;
 const routes = require('./routes');
+const { StatusCodes } = require('http-status-codes');
 
 // Middleware
 app.use(express.json());
@@ -20,16 +21,16 @@ app.use((err, req, res, next) => {
         path: req.path,
         method: req.method
     });
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Internal Server Error' });
 });
 
 // Health check route
 app.get('/health', (req, res) => {
     logger.info('Health check endpoint called');
-    res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
+    res.status(StatusCodes.OK).json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-app.use(authenticateJWT);
+// app.use(authenticateJWT);
 app.use(routes);
 
 // Start server with database connections

@@ -23,10 +23,11 @@ const paymentController = {
 
   async getPaymentStatusController(req, res, next) {
     try {
+      const paymentId = req.params.id;
       const response = await callPaymentService(
         'get',
-        `/api/v1/payments`,
-        req.query,
+        `/api/v1/payments/${paymentId}`,
+        null,
         req.headers['jwt-token'],
       );
 

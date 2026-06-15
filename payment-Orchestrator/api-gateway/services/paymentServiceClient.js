@@ -12,7 +12,9 @@ function buildPaymentServiceRequest(method, path, data, jwtToken) {
   };
 
   if(method === 'get'){
-    requestOptions.params = data;
+    if(data && Object.keys(data).length){
+      requestOptions.params = data;
+    }
   }
   else{
     requestOptions.data = data;
@@ -23,7 +25,13 @@ function buildPaymentServiceRequest(method, path, data, jwtToken) {
 
 async function callPaymentService(method, path, data, jwtToken) {
   const requestOptions = buildPaymentServiceRequest(method, path, data, jwtToken);
-  return paymentServiceBreaker.fire(requestOptions);
+  try{
+    const response = await paymentServiceBreaker.fire(requestOptions);
+    return response;
+  }
+  catch(error){
+    throw error;
+  }
 }
 
 module.exports = { callPaymentService };

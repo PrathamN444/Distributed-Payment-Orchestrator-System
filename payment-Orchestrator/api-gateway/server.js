@@ -5,7 +5,6 @@ const { initializeConnections } = require('./config/connection');
 const { logger, loggerMiddleware } = require('../shared/middleware/logger');
 const errorHandler = require('./middleware/errorHandler');
 const routes = require('./routes');
-const { authenticateJWT } = require('../shared/middleware/auth');
 const PORT = process.env.API_GATEWAY_PORT;
 
 // Middleware
@@ -19,7 +18,6 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-app.use(authenticateJWT);
 app.use(routes);
 
 // Global error handler

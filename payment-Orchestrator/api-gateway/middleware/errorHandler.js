@@ -17,9 +17,9 @@ function normalizeAxiosError(err) {
 
     return null;
 }
+
 function errorHandler(err, req, res, next) {
     const normalized = normalizeAxiosError(err);
-
     if (normalized) {
         const status = normalized.status || 503;
         const body = normalized.body || { message: 'Service error' };

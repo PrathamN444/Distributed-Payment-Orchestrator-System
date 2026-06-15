@@ -1,4 +1,5 @@
 const { pool } = require("../../shared/config/db/postgres");
+const { logger } = require("../../shared/middleware/logger");
 
 const paymentRepository = {
     async createPayment({ payment_id, amount, user_id, provider_transaction_id }){
@@ -31,16 +32,12 @@ const paymentRepository = {
 
     async updatePayment(data){
       try{
-        const { paymentId, status, providerTransactionId, failureReason, retryCount } = data;
+        const { paymentId, status, failureReason, retryCount } = data;
         let query, values;
         const updatedAt = new Date();
         if(failureReason){
           query = `UPDATE payments SET status = $1, failure_reason = $2, retry_count = $3, updated_at = $4 WHERE payment_id = $5`;
           values = [status, failureReason, retryCount, updatedAt, paymentId];
-        }
-        else if(providerTransactionId){
-          query = `UPDATE payments SET status = $1, provider_transaction_id = $2, updated_at = $3 WHERE payment_id = $4`;
-          values = [status, providerTransactionId, updatedAt, paymentId];
         }
         else{
           query = `UPDATE payments SET status = $1, updated_at = $2 WHERE payment_id = $3`;

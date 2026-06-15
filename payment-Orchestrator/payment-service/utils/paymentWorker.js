@@ -22,7 +22,7 @@ const processProviderPayment = async (jobData) => {
   // Simulate external API
   await new Promise((resolve) => setTimeout(resolve, 2000));
 
-  // Random failures for testing
+  // Random failures for testing retry mechanisms 
   const random = Math.random();
   if(random < 0.3){
     throw new Error('BullMQ Provider timeout.');
@@ -34,21 +34,21 @@ const processProviderPayment = async (jobData) => {
 // Worker to process payment jobs
 const paymentWorker = new Worker('payment-processing', async (job) => {
   const { payment_id, provider_transaction_id } = job.data;
-  logger.info('Processing payment job', { payment_id, attempt: job.attemptsMade + 1 });
+  logger.info(`Processing payment job ${payment_id}, attempt: ${job.attemptsMade + 1}`);
 
   try{
     // payment validation to prevent duplicate processing in case of retries and ensure idempotency
     const paymentDetails = await paymentRepository.getPaymentById(provider_transaction_id);
     
     if(!paymentDetails){
-      logger.error('Payment record not found in DB', { payment_id, provider_transaction_id });
+      logger.error(`Payment record not found in DB: ${payment_id}, Provider Transaction ID: ${provider_transaction_id}`);
       const error = new Error('Payment record not found');
       error.retryable = false;  // mark as non-retryable to move to DLQ immediately
       throw error;
     }
 
     if(paymentDetails.status === PAYMENT_STATUS.SUCCESS){
-      logger.info('Payment already marked as success. Skipping processing.', { payment_id });
+      logger.info(`Payment already marked as success. Skipping processing.${ payment_id }`);
       return true;
     }
 
@@ -58,7 +58,7 @@ const paymentWorker = new Worker('payment-processing', async (job) => {
     const providerResponse = await withTimeout(processProviderPayment( job.data ), 10000);
 
     // mark status as success and update provider reference in provider transaction id
-    await paymentRepository.updatePayment({ paymentId: payment_id, status: PAYMENT_STATUS.SUCCESS, providerTransactionId: providerResponse.providerReference });
+    await paymentRepository.updatePayment({ paymentId: payment_id, status: PAYMENT_STATUS.SUCCESS });
 
     logger.info('Payment processed successfully', { paymentId: payment_id });
     return true;

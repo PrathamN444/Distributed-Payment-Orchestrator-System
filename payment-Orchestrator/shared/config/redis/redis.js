@@ -12,6 +12,7 @@ const redis = new Redis({
   enableReadyCheck: true,
   enableOfflineQueue: true,
   retryStrategy: (times) => Math.min(times * 50, 2000),
+  maxRetriesPerRequest: null,
 });
 
 const connectRedis = async (retries = 0) => {

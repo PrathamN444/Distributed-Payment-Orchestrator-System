@@ -22,10 +22,6 @@ paymentServiceBreaker.on('halfOpen', () => logger.info('PaymentService circuit h
 paymentServiceBreaker.on('close', () => logger.info('PaymentService circuit closed'));
 paymentServiceBreaker.on('timeout', () => logger.warn('PaymentService request timed out'));
 paymentServiceBreaker.on('reject', () => logger.warn('PaymentService request rejected (circuit open)'));
-paymentServiceBreaker.on('failure', (error) => logger.error('PaymentService request failed', { error: error.message }));
-
-paymentServiceBreaker.fallback(() => {
-  throw new Error('Payment service temporarily unavailable');
-});
+paymentServiceBreaker.on('failure', (error) => logger.error(`PaymentService request failed: ${error.message}`));
 
 module.exports = { paymentServiceBreaker };
